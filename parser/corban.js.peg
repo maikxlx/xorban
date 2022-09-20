@@ -1,0 +1,161 @@
+// Xorban PEG Parser
+
+{
+  function _join(arg)
+  {
+    if (typeof(arg) == "string")
+      return arg;
+    else
+    {
+      ret = "";
+      for (v in arg) { ret += _join(arg[v]); }
+      return ret;
+    }
+  }
+
+  function _node(label, arg)
+  {
+    var ret = [];
+    if (label != undefined) ret.push( label );
+    if (typeof( arg ) == "object" && typeof( arg[0] ) == "string" && arg[0] != "")
+    {
+      ret.push( arg );
+      return ret;
+    }
+    return _node_int(label, arg);
+  } 
+
+  function _node_int(label, arg)
+  {
+    if (typeof( arg ) == "string")
+      return arg;
+    var ret = [];
+    if (label != undefined) ret.push( label );
+    for (v in arg)
+    {
+      if (arg[v].length != 0)
+        ret.push( _node_int( undefined, arg[v] ) );
+    }
+    return ret;
+  }
+ 
+  function _node2(label, arg1, arg2)
+  {
+    return [label].concat(_node(arg1)).concat(_node(arg2));
+  }
+
+  function _node_nonempty(label, arg)
+  {
+    var _n = _node(label, arg);
+    return (_n.length == 1 && _n[0] == label) ? [] : _n;
+  }
+}
+
+
+text "text" = expr:(spaces? ( sentence* ) spaces? EOF?) {return _node("text", expr);}
+
+
+// SYNTAX
+
+sentence = expr:( formula / CA parenthetical* formula / WA ) {return _node("sentence", expr);}
+
+formula = expr:( CCA / ZU sentence* ZUKA / modifier parenthetical* formula ) {return _node("formula", expr);}
+
+modifier = expr:( NA / LA parenthetical* formula ) {return _node("modifier", expr);}
+
+parenthetical = expr:( CA parenthetical* formula / WA ) {return _node("parenthetical", expr);}
+
+// WORD CLASSES
+
+ZU = expr:( z u !k spaces? ) {return ["quote", _join(expr)];}
+
+ZUKA = expr:( z u k desinence spaces? ) {return ["unquote", _join(expr)];}
+
+CCA = expr:( stem desinence spaces? ){return ["atomic_formula", _join(expr)];}
+
+NA = expr:( ( b / f / d / m / n / h ) desinence spaces? ){return ["unary_operator", _join(expr)];}
+
+LA = expr:( ( l / r / s / x / j ) desinence spaces? ) {return ["binary_operator", _join(expr)];}
+
+CA = expr:( c desinence spaces? ){return ["illocutionary_operator", _join(expr)];}
+
+WA = expr:( w desinence spaces? ) {return ["interjection", _join(expr)];}
+
+
+// MORPHOLOGY
+
+stem = expr:( C schwa? C ( schwa? C )* / q V? ( ( C / w ) V? )* q ) {return _join(expr);}
+
+
+
+
+desinence = expr:( V ( k V )* ) {return _join(expr);}
+
+C = expr:( b / c / d / f / g / j / k / l / m / n / p / r / s / t / v / x / z ) {return _join(expr);}
+
+plosive = expr:( p / b / t / d / k / g ) {return _join(expr);}
+
+fricative = expr:( f / v / s / z / c / j / x ) {return _join(expr);}
+
+liquid = expr:( m / n / l / r ) {return _join(expr);}
+
+sibilant = expr:( s / z / c / j ) {return _join(expr);}
+
+voiceless = expr:( p / t / k / f / s / c ) {return _join(expr);}
+
+voiced = expr:( b / d / g / v / z / j ) {return _join(expr);}
+
+onset = expr:( C / CC ) {return _join(expr);}
+
+CC = expr:( sibilant ( plosive / fricative / liquid ) / plosive ( fricative / liquid ) / fricative liquid ) {return _join(expr);}
+
+
+C_C = expr:( fricative plosive / liquid plosive / liquid fricative ) {return _join(expr);}
+
+cluster = expr:( onset / C onset / C_C onset ) {return _join(expr);}
+
+
+// ' = schwa after vowel, and must be followed by coda
+
+
+V = expr:( ( a / e / i / o / u ) ( apostrophe V )? ) {return _join(expr);}
+
+schwa = expr:( schwa_1 &C ) {return _join(expr);}
+
+schwa_1 = "aaa" {return "aaa";}
+
+a = [a] !V {return "a";}
+b = [b] !b !voiceless  {return "b";}
+c = [c] !c !voiced !sibilant {return "c";}
+d = [d] !d !voiceless  {return "d";}
+e = [e] !V {return "e";}
+f = [f] !f !voiced {return "f";}
+g = [g] !g !voiceless {return "g";}
+h = [h] !C {return "h";}
+i = [i] !V {return "i";}
+j = [j] !j !voiceless !sibilant {return "j";}
+k = [k] !k !voiced {return "k";}
+l = [l] !l {return "l";}
+m = [m] !m !c !d !f !g !j !k !s !t !v ! x !z {return "m";}
+n = [n] !n !p !b {return "n";}
+o = [o] !V {return "o";}
+p = [p] !p !voiced  {return "p";}
+q = [q] {return "q";}
+r = [r] !r {return "r";}
+s = [s] !s !voiced !sibilant {return "s";}
+t = [t] !t !voiced  {return "t";}
+u = [u] !V {return "u";}
+v = [v] !v !voiceless {return "v";}
+w = [w] !w {return "w";}
+x = [x] !x !voiced {return "x";}
+z = [z] !z !voiceless !sibilant {return "z";}
+
+apostrophe = "'" {return "'";}
+
+// -------------------------------------------------------
+
+EOF = expr:(!.)  {return _join(expr);}
+
+spaces = expr:(space_char* )  {return _join(expr);}
+
+space_char = [.\t\n\r?!,\u0020] {return "";}
