@@ -1,0 +1,76 @@
+html {
+    margin:    0 auto;
+    max-width: 760px;
+}
+body {
+	font-family: 'Merriweather Sans', sans-serif;
+	font-weight: 300;
+	padding: 20px;
+	background-color: #ffffd8;
+}
+h1, h2, h3, h4 {
+	font-family: Merriweather, serif;
+	font-weight: 900;
+}
+h1 {
+	font-size: 250%;
+	text-align: center;
+}
+h2 {
+	font-size: 175%;
+}
+h3 {
+	font-size: 125%;
+	margin-top: 2em;
+	margin-bottom: 0.8em; /* =16px here */
+}
+b {
+	font-weight: 500;
+}
+u {
+	text-decoration-line: underline;
+	text-decoration-style: double;
+}
+strong {
+	font-weight: 800;
+}
+table {
+    border-collapse: collapse;
+    margin: 0.5em 0.75em;
+}
+p {
+	margin-top: 1em; /* =16px here */
+	margin-bottom: 0.5em;
+}
+ul {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+li {
+	margin-bottom: 0.25em;
+}
+.th-smaller th {
+    font-size: 87.5%;
+}
+td, th {
+    font-weight: 300;
+	border-right: 1px solid #ccccac;
+	border-bottom: 1px solid #ccccac;
+    padding: 5px;
+    text-align: center;
+}
+.th-1col th:first-child {
+	border-right: 1px solid #000;
+}
+.th-2col th:nth-child(2) {
+	border-right: 1px solid #000;
+}
+tr:first-child th {
+    border-bottom: 1px solid #000;
+}
+
+.gloss {
+	margin-left: 0.75em;
+	border-left: 1px solid #000;
+	padding-left: 0.75em;
+}
