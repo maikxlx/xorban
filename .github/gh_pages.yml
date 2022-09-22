@@ -1,0 +1,42 @@
+# from Eberban
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [master]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # needed(??)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # /node -> /parser        
+      - name: Install NPM dependencies
+        run: |
+          cd parser
+          npm install
+          cd ..
+
+      - name: Build JS bundles
+        run: |
+          cd parser
+          npm run build
+          cd ..
+
+      - name: Commit changes to gh-pages
+        run: |
+          rm -f .gitignore
+          echo "node_modules" > .gitignore
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -b tmp/gh-pages
+          git add -A
+          git commit -m "Update GitHub pages"
+          git push origin tmp/gh-pages:gh-pages --force
